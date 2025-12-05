@@ -6,5 +6,5 @@ def get_connection():
         user="root",
         password="1234",
         database="bbong",
-        port=3306
+        port=3307
     )
