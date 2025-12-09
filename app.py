@@ -1,17 +1,19 @@
 from fastapi import FastAPI
 from BE.api.teacher_api import teacher_api
-from BE.api.kid_api import kid_api
+from BE.api.student_api import student_api
 from fastapi.middleware.cors import CORSMiddleware
-from BE.websocket import ws_router
 from BE.api.set_api import set_api
+from BE.api.room_api import room_api
+from BE.api.problem_api import problem_api
 
 
 app = FastAPI()
 
-app.include_router(ws_router)
-app.include_router(kid_api)
+app.include_router(student_api)
 app.include_router(teacher_api)
 app.include_router(set_api)
+app.include_router(room_api)
+app.include_router(problem_api)
 
 app.add_middleware(
     CORSMiddleware,

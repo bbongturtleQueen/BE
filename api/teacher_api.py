@@ -3,7 +3,6 @@ from pydantic import BaseModel
 from ..db import get_connection
 import hashlib
 
-from ..room_api import create_room   # ★ 추가
 
 teacher_api = APIRouter()
 
@@ -65,12 +64,3 @@ def login_teacher(data: LoginRequest):
         return {"status": "success"}
 
     return {"status": "wrong_password"}
-
-# 방 생성
-@teacher_api.post("/ppang/tch/turtle/create-room")
-def create_room_api(req: CreateRoomRequest):
-    code = create_room(req.id)
-    return {
-        "status": "success",
-        "code": code
-    }
