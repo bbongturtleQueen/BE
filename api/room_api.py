@@ -1,4 +1,4 @@
-from fastapi import APIRouter, HTTPException
+from fastapi import APIRouter, HTTPException, Query
 from pydantic import BaseModel
 from typing import List
 from ..db import get_connection
@@ -42,20 +42,29 @@ def create_room_code(data: RoomCodeIn):
     return {"status": "success", "set_name": data.set_name, "room_code": data.code}
 
 # ------------------------------
-# 세트 목록 + 방 코드 조회
+# 세트 목록 + 방 코드 조회 (특정 teacher_id만)
 # ------------------------------
 @room_api.get("/list", response_model=List[SetOut])
-def get_set_list():
+def get_set_list(teacher_id: str = Query(...)):
     conn = get_connection()
     try:
         with conn.cursor(dictionary=True) as cur:
             cur.execute("""
-                SELECT s.name, s.teacher_id, r.code
+                SELECT s.name, s.teacher_id, s.code AS set_code, r.code AS room_code
                 FROM sets s
                 LEFT JOIN rooms r ON s.name = r.set_name
-            """)
+                WHERE s.teacher_id = %s
+            """, (teacher_id,))
             sets = cur.fetchall()
-            return sets
+            # 여기서 set_code와 room_code를 SetOut 모델에 맞춰서 반환
+            result = []
+            for s in sets:
+                result.append({
+                    "name": s["name"],
+                    "teacher_id": s["teacher_id"],
+                    "code": s["room_code"] if s["room_code"] else s["set_code"]
+                })
+            return result
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
     finally:
