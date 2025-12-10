@@ -50,22 +50,24 @@ def get_set_list(teacher_id: str = Query(...)):
     try:
         with conn.cursor(dictionary=True) as cur:
             cur.execute("""
-                SELECT s.name, s.teacher_id, s.code AS set_code, r.code AS room_code
+                SELECT s.name, s.teacher_id, r.code AS room_code
                 FROM sets s
                 LEFT JOIN rooms r ON s.name = r.set_name
                 WHERE s.teacher_id = %s
             """, (teacher_id,))
             sets = cur.fetchall()
-            # 여기서 set_code와 room_code를 SetOut 모델에 맞춰서 반환
+
+            # SetOut 모델에 맞춰서 반환
             result = []
             for s in sets:
                 result.append({
                     "name": s["name"],
                     "teacher_id": s["teacher_id"],
-                    "code": s["room_code"] if s["room_code"] else s["set_code"]
+                    "code": s["room_code"]  # room code 반환, 없으면 None
                 })
             return result
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
     finally:
         conn.close()
+

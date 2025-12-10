@@ -16,11 +16,12 @@ class CreateSet(BaseModel):
 
 
 # ------------------------------
-# 랜덤 코드 생성
+# 랜덤 코드 생성 (숫자 6자리)
 # ------------------------------
-def generate_room_code(length: int = 8) -> str:
-    chars = string.ascii_uppercase + string.digits
+def generate_room_code(length: int = 6) -> str:
+    chars = string.digits  # 숫자만
     return ''.join(random.choice(chars) for _ in range(length))
+
 
 
 # ------------------------------
@@ -31,22 +32,21 @@ def create_set(data: CreateSet):
     conn = get_connection()
     try:
         with conn.cursor() as cur:
-            # 1️⃣ sets 테이블에 세트 생성
+            # 세트 생성
             cur.execute(
                 "INSERT INTO sets (name, teacher_id) VALUES (%s, %s)",
                 (data.name, data.teacher_id)
             )
 
-            # 2️⃣ rooms 테이블에 랜덤 코드 생성 후 저장
+            # 랜덤 코드 생성
             code = generate_room_code()
-
-            # 혹시 중복될 경우 재생성
             while True:
                 cur.execute("SELECT code FROM rooms WHERE code = %s", (code,))
                 if cur.fetchone() is None:
                     break
                 code = generate_room_code()
 
+            # rooms에 저장
             cur.execute(
                 "INSERT INTO rooms (code, set_name) VALUES (%s, %s)",
                 (code, data.name)
@@ -59,8 +59,4 @@ def create_set(data: CreateSet):
     finally:
         conn.close()
 
-    return {
-        "status": "success",
-        "set_name": data.name,
-        "room_code": code  # 생성된 초대코드도 반환
-    }
+    return {"status": "success", "set_name": data.name, "room_code": code}
