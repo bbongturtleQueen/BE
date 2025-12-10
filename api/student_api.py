@@ -2,12 +2,12 @@ from fastapi import APIRouter, HTTPException
 from pydantic import BaseModel
 from ..db import get_connection
 
-student_api = APIRouter(prefix="/ppang/kid")
+student_api = APIRouter(prefix="/ppang/std")
 
 class EnterCode(BaseModel):
     code: str
 
-@student_api.post("/enter-code")
+@student_api.post("/entercode")
 def enter_code(data: EnterCode):
     conn = get_connection()
     try:
